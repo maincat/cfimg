@@ -1,0 +1,8 @@
+name = "cfimg"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+
+# 这里的环境变量只是系统层预留的空槽，建议在网页后台去填写真实密文
+[vars]
+IMGBB_API_KEY = ""
+ADMIN_PASSWORD = ""
