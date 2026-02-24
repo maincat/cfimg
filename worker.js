@@ -647,61 +647,61 @@ function generateHTML(requiresPassword) {
 
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        loadingEl.innerText = files.length > 1 ? `✨ 正在上传第 ${ i + 1 }/${files.length} 张: ${file.name}` : `✨ 相片极速装载中，稍作须臾...`;
+        loadingEl.innerText = files.length > 1 ? \`✨ 正在上传第 \${i + 1}/\${files.length} 张: \${file.name}\` : \`✨ 相片极速装载中，稍作须臾...\`;
 
-  if (!file.type.startsWith('image/')) {
-    console.error(`跳过非图片文件: ${file.name}`);
-    continue;
-  }
-  if (file.size > 32 * 1024 * 1024) {
-    alert(`文件 ${file.name} 过大（超过 32MB），已跳过。`);
-    continue;
-  }
+        if (!file.type.startsWith('image/')) {
+          console.error(\`跳过非图片文件: \${file.name}\`);
+          continue;
+        }
+        if (file.size > 32 * 1024 * 1024) {
+          alert(\`文件 \${file.name} 过大（超过 32MB），已跳过。\`);
+          continue;
+        }
 
-  const fd = new FormData();
-  fd.append('file', file);
-  if (sysStateRequiresAuth) fd.append('password', localSysKey);
+        const fd = new FormData();
+        fd.append('file', file);
+        if (sysStateRequiresAuth) fd.append('password', localSysKey);
 
-  try {
-    const res = await fetch('/upload', { method: 'POST', body: fd });
-    const data = await res.json();
+        try {
+          const res = await fetch('/upload', { method: 'POST', body: fd });
+          const data = await res.json();
 
-    if (res.ok && data.success) {
-      successCount++;
-      lastData = data;
-      // 实时存入画廊
-      saveToGallery({
-        url: data.url, thumb_url: data.thumb_url, delete_url: data.delete_url, filename: data.filename
-      });
-    } else {
-      const errMsg = res.status === 403 ? '安保拒收：你的信令过期或越权操作已被镇压！' : (data.error || '未名深渊错误');
-      alert(`文件 ${file.name} 上传失败: ${errMsg}`);
+          if (res.ok && data.success) {
+            successCount++;
+            lastData = data;
+            // 实时存入画廊
+            saveToGallery({
+              url: data.url, thumb_url: data.thumb_url, delete_url: data.delete_url, filename: data.filename
+            });
+          } else {
+            const errMsg = res.status === 403 ? '安保拒收：你的信令过期或越权操作已被镇压！' : (data.error || '未名深渊错误');
+            alert(\`文件 \${file.name} 上传失败: \${errMsg}\`);
+          }
+        } catch (e) {
+          alert(\`文件 \${file.name} 通讯中断: \${e.message}\`);
+        }
+      }
+
+      loadingEl.style.display = 'none';
+      loadingEl.innerText = "✨ 相片极速装载中，稍作须臾...";
+      uploadArea.style.display = 'block';
+
+      if (successCount > 0) {
+        resultBox.style.display = 'block';
+        resultBadge.innerText = successCount === 1 ? "✅ 画迹已被镌刻！现已收存至下方私密展示廊。" : \`✅ 成功镌刻 \${successCount} 张画迹！已悉数存入下方。\`;
+        
+        // 如果是多个，回显最后一张的信息（也可以改为不回显或展示列表，但目前 UI 结构回显最后一张最稳）
+        if (lastData) {
+          document.getElementById('urlDirect').value = lastData.url;
+          document.getElementById('urlMd').value = '![' + lastData.filename + '](' + lastData.url + ')';
+          document.getElementById('urlHtml').value = '<a href="' + lastData.url + '" target="_blank"><img src="' + lastData.url + '" alt="' + lastData.filename + '"></a>';
+          document.getElementById('urlBb').value = '[url=' + lastData.url + '][img]' + lastData.url + '[/img][/url]';
+          document.getElementById('previewImg').src = lastData.thumb_url || lastData.url;
+        }
+      }
     }
-  } catch (e) {
-    alert(`文件 ${file.name} 通讯中断: ${e.message}`);
-  }
-}
-
-loadingEl.style.display = 'none';
-loadingEl.innerText = "✨ 相片极速装载中，稍作须臾...";
-uploadArea.style.display = 'block';
-
-if (successCount > 0) {
-  resultBox.style.display = 'block';
-  resultBadge.innerText = successCount === 1 ? "✅ 画迹已被镌刻！现已收存至下方私密展示廊。" : `✅ 成功镌刻 ${successCount} 张画迹！已悉数存入下方。`;
-
-  // 如果是多个，回显最后一张的信息（也可以改为不回显或展示列表，但目前 UI 结构回显最后一张最稳）
-  if (lastData) {
-    document.getElementById('urlDirect').value = lastData.url;
-    document.getElementById('urlMd').value = '![' + lastData.filename + '](' + lastData.url + ')';
-    document.getElementById('urlHtml').value = '<a href="' + lastData.url + '" target="_blank"><img src="' + lastData.url + '" alt="' + lastData.filename + '"></a>';
-    document.getElementById('urlBb').value = '[url=' + lastData.url + '][img]' + lastData.url + '[/img][/url]';
-    document.getElementById('previewImg').src = lastData.thumb_url || lastData.url;
-  }
-}
-    }
-  </script >
-</body >
-</html >
+  </script>
+</body>
+</html>
   `;
 }
